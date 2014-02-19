@@ -11,11 +11,11 @@ using System.IO;
 using NuGetTemplatesPlus.Library.Interface;
 
 
-namespace GProssliner.NuGetTemplatesPlus_VSPackage{
+namespace GProssliner.NuGetTemplatesPlus_VSPackage {
 
     [ComVisible(true)]
     [Guid("A95A46D0-3CC8-4BA5-9578-A1BD9184E17C")]
-    [CodeGeneratorRegistration(typeof(CustomTool), "nugettempl", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true, GeneratorRegKeyName = "nugettempl")]
+    [CodeGeneratorRegistration(typeof(CustomTool), "NuGetTemplatesPlus", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true, GeneratorRegKeyName = "NuGetTemplatesPlus")]
     [ProvideObject(typeof(CustomTool))]
     [ClassInterface(ClassInterfaceType.None)]
     public class CustomTool : BaseCodeGeneratorWithSite, ICodeGeneratorContext {
