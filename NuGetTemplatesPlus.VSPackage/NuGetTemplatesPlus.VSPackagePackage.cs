@@ -15,8 +15,7 @@ using System.Linq;
 using Microsoft.VisualStudio.XmlEditor;
 using Microsoft.VisualStudio.TextManager.Interop;
 
-namespace GProssliner.NuGetTemplatesPlus_VSPackage
-{
+namespace GProssliner.NuGetTemplatesPlus_VSPackage {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     ///
@@ -34,8 +33,7 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(GuidList.guidNuGetTemplatesPlus_VSPackagePkgString)]
-    public sealed class NuGetTemplatesPlus_VSPackagePackage : Package
-    {
+    public sealed class NuGetTemplatesPlus_VSPackagePackage : Package {
         /// <summary>
         /// Default constructor of the package.
         /// Inside this method you can place any initialization code that does not require 
@@ -43,8 +41,7 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage
         /// not sited yet inside Visual Studio environment. The place to do all the other 
         /// initialization is the Initialize method.
         /// </summary>
-        public NuGetTemplatesPlus_VSPackagePackage()
-        {
+        public NuGetTemplatesPlus_VSPackagePackage() {
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
 
@@ -163,6 +160,7 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage
             foreach (var templatePath in project.GetItemTemplates("Visual C#")) {
                 var profilePath = Path.Combine(userItemTemplatesLocation, "Visual C#", Path.GetFileName(templatePath));
                 File.Copy(templatePath, profilePath);
+                _filesToDelete.Add(profilePath);
             }
 
         }
