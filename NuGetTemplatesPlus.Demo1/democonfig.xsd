@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="democonfig"
+    targetNamespace="urn:democonfig"
+    elementFormDefault="qualified"
+    xmlns="urn:democonfig"
+    xmlns:mstns="http://tempuri.org/democonfig.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <xs:element name="democonfig">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="configClass">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="unbounded">
+              <xs:element name="configProperty">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:Name" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:Name" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

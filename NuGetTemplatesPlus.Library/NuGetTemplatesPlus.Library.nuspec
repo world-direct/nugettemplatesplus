@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGetTemplatesPlus.Library</id>
+    <version>1.0</version>
+    <authors>g.prossliner@gmx.at</authors>
+    <description>Runtime-Library for NuGetTemplatesPlus VS-Extension</description>
+    <language>en-US</language>
+    <licenseUrl>https://nugettemplatesplus.codeplex.com/license</licenseUrl>
+    <projectUrl>https://nugettemplatesplus.codeplex.com</projectUrl>
+  </metadata>
+  <files>
+    <file src="bin\release\*.*" target="lib\net40" />
+  </files>
+</package>

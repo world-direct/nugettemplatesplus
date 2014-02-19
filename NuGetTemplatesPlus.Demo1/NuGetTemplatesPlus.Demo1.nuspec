@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGetTemplatesPlus.Demo1</id>
+    <version>1.0</version>
+    <authors>g.prossliner@gmx.at</authors>
+    <description>Demo project how tu use https://nugettemplatesplus.codeplex.com</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="democonfig.zip" target="tools\NuGetTemplatesPlus\ItemTemplates\Visual C#" />
+    <file src="democonfig.xsd" target="tools\NuGetTemplatesPlus\XmlSchemas" />
+    <file src="bin\release\*.*"  target="tools\NuGetTemplatesPlus\CodeGenerators" />
+  </files>
+</package>
