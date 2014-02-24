@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Xml;
+using System.Reflection;
 
 namespace NuGetTemplatesPlus.Engine {
 
@@ -80,11 +81,68 @@ namespace NuGetTemplatesPlus.Engine {
             }
         }
 
+        public IEnumerable<CustomToolInfo> CustomTools {
+            get {
+                return this.NuGetTemplatePlusPackages.SelectMany(p => p.CustomTools);
+            }
+        }
+
+        public IEnumerable<XmlSchemaInfo> XmlSchemas {
+            get {
+                return this.NuGetTemplatePlusPackages.SelectMany(p => p.XmlSchemas);
+            }
+        }
+
+        public IEnumerable<string> LibFolders {
+            get {
+                foreach (var nuGetTemplatePlusPackage in this.NuGetTemplatePlusPackages) {
+                    var absolutePath = Path.Combine(nuGetTemplatePlusPackage.NuGetTemplatesPlusFolder, "Lib");
+                    if (!Directory.Exists(absolutePath))
+                        continue;
+
+                    yield return absolutePath;
+                }
+            }
+        }
+
         public IEnumerable<string> GetItemTemplates(string language) {
             var path = "ItemTemplates\\" + language;
 
             return this.EnumerateNuGetTemplatesPlusModuleFiles(path, "*.zip")
                 .ToList();
+        }
+
+
+        public IDisposable AssemblyResolve() {
+            return new AssemblyResolver(this.LibFolders);
+        }
+
+        class AssemblyResolver : IDisposable {
+
+            string[] _paths;
+
+            public AssemblyResolver(IEnumerable<string> paths) {
+                _paths = paths.ToArray();
+                AppDomain.CurrentDomain.AssemblyResolve += assembly_resolve;
+            }
+
+            Assembly assembly_resolve(object sender, ResolveEventArgs e) {
+                foreach (var path in _paths) {
+                    var dllPath = Path.Combine(path, e.Name + ".dll");
+                    if (File.Exists(dllPath))
+                        return Assembly.LoadFrom(dllPath);
+                }
+
+                return null;
+            }
+
+            #region IDisposable Members
+
+            public void Dispose() {
+                AppDomain.CurrentDomain.AssemblyResolve -= assembly_resolve;
+            }
+
+            #endregion
         }
     }
 }

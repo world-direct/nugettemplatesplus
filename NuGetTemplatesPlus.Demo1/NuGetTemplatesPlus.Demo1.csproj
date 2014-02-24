@@ -63,7 +63,14 @@
     <None Include="democonfig.zip" />
     <None Include="NuGetTemplatesPlus.Demo1.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="NuGetTemplatesPlus.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)\*.* C:\temp\NuGetTemplatesPlusDebug\packages\NuGetTemplatesPlus.Demo1.1.0\tools\NuGetTemplatesPlus\Lib\
+copy D:\Developing\GProssliner\NuGetTemplatesPlus\NuGetTemplatesPlus.Demo1\NuGetTemplatesPlus.xml C:\temp\NuGetTemplatesPlusDebug\packages\NuGetTemplatesPlus.Demo1.1.0\tools\NuGetTemplatesPlus\NuGetTemplatesPlus.xml</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

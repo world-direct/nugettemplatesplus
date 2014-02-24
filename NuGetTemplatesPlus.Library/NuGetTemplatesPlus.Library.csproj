@@ -52,8 +52,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeDomCodeGenerator.cs" />
-    <Compile Include="Interface\ICodeGenerator.cs" />
-    <Compile Include="Interface\ICodeGeneratorContext.cs" />
+    <Compile Include="Interface\ISourceFileCondition.cs" />
+    <Compile Include="Interface\SourceFile.cs" />
+    <Compile Include="Interface\ICustomTool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

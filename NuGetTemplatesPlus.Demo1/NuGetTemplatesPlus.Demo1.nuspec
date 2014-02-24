@@ -10,6 +10,6 @@
   <files>
     <file src="democonfig.zip" target="tools\NuGetTemplatesPlus\ItemTemplates\Visual C#" />
     <file src="democonfig.xsd" target="tools\NuGetTemplatesPlus\XmlSchemas" />
-    <file src="bin\release\*.*"  target="tools\NuGetTemplatesPlus\CodeGenerators" />
+    <file src="bin\release\*.*"  target="tools\NuGetTemplatesPlus\Lib" />
   </files>
 </package>

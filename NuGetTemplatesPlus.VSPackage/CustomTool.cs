@@ -18,39 +18,68 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage {
     [CodeGeneratorRegistration(typeof(CustomTool), "NuGetTemplatesPlus", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true, GeneratorRegKeyName = "NuGetTemplatesPlus")]
     [ProvideObject(typeof(CustomTool))]
     [ClassInterface(ClassInterfaceType.None)]
-    public class CustomTool : BaseCodeGeneratorWithSite, ICodeGeneratorContext {
+    public class CustomTool : BaseCodeGeneratorWithSite {
 
+        class CustomToolInputFile : ICustomToolSourceFile {
+
+            #region ISourceFile Members
+
+            public string FilePath {
+                get;
+                set;
+            }
+
+            public string FileContent {
+                get;
+                set;
+            }
+
+            public System.CodeDom.Compiler.CodeDomProvider CodeDomProvider {
+                get;
+                set;
+            }
+
+            public string FileNameSpace {
+                get;
+                set;
+            }
+
+            #endregion
+        }
 
         protected override byte[] GenerateCode(string inputFileContent) {
 
+            var inputFile = new CustomToolInputFile {
+                CodeDomProvider = this.GetCodeProvider(),
+                FileContent = inputFileContent,
+                FilePath = this.InputFilePath,
+                FileNameSpace = this.FileNameSpace
+            };
+
             var projectItem = new EnvDTEProjectItemInfo(this.GetProjectItem());
-            var codeGeneratorType = projectItem.TryGetCodeGeneratorType();
-            if (codeGeneratorType == null) {
-                this.GeneratorError(0, "NO CODEGENERATOR-CLASS!", 0, 0);
-                return new byte[0];
+            using (projectItem.Project.AssemblyResolve()) {
+
+                var customToolInfo = projectItem.GetCustomToolInfo(inputFile);
+
+                if (customToolInfo == null) {
+                    this.GeneratorError(0, "NO CODEGENERATOR-CLASS!", 0, 0);
+                    return new byte[0];
+                }
+
+
+                var customToolType = Type.GetType(customToolInfo.TypeName);
+                var customTool = (ICustomTool)Activator.CreateInstance(customToolType);
+                var content = customTool.GenerateCode(inputFile, customToolInfo.Parameters);
+
+                return content;
+
             }
 
-            var codeGenerator = (ICodeGenerator)Activator.CreateInstance(codeGeneratorType);
-            this.InputFileContent = inputFileContent;
-            var content = codeGenerator.GenerateCode(this);
-
-            return content;
-
-
         }
 
-        #region ICodeGeneratorContext Members
-
-        public string InputFileContent {
-            get;
-            private set;
+        protected override string GetDefaultExtension() {
+            return ".designer" + base.GetDefaultExtension();
         }
 
-
-        System.CodeDom.Compiler.CodeDomProvider ICodeGeneratorContext.CodeDomProvider {
-            get { return this.GetCodeProvider(); }
-        }
-
-        #endregion
     }
 }

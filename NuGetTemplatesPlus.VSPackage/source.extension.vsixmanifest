@@ -1,10 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
   <Identifier Id="cfba5541-f1e6-48e9-a5a0-daf5707099b2">
-    <Name>NuGetTemplatesPlus.VSPackage</Name>
+    <Name>NuGetTemplatesPlus</Name>
     <Author>GProssliner</Author>
     <Version>1.0</Version>
-    <Description xml:space="preserve">Information about my package</Description>
+    <Description xml:space="preserve">This extension allows to individual nuget-packages to
+
+* include ItemTemplate that are shown automatically in the "Add new Item" Dialog, if the nuget-package in intalled in the Solution or Project
+
+* include XmlSchemas that are automatically refererence in the Visual Studio Xml-Editor
+
+* allow registration-free Code-Generators to be run for Content-Files</Description>
     <Locale>1033</Locale>
     <MoreInfoUrl>https://nugettemplatesplus.codeplex.com</MoreInfoUrl>
     <License>ApacheLicense.2.0.txt</License>

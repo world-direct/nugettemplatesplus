@@ -8,13 +8,14 @@ namespace NuGetTemplatesPlus.Library.Interface {
     /// <summary>
     /// Low-Level interface for Code-Generation
     /// </summary>
-    public interface ICodeGenerator {
+    public interface ICustomTool {
 
         /// <summary>
         /// Low-Level interface for Code-Generation
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="sourceFile">the input-file</param>
+        /// <param name="parameter">the (optional) parameter, as specified in the NuGetTemplates.xml configuration file</param>
         /// <returns></returns>
-        byte[] GenerateCode(ICodeGeneratorContext args);
+        byte[] GenerateCode(ICustomToolSourceFile sourceFile, string parameter);
     }
 }

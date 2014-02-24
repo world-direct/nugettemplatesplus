@@ -50,19 +50,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomToolInfo.cs" />
     <Compile Include="DependencyInfo.cs" />
     <Compile Include="NuGetTemplatePlusPackageInfo.cs" />
+    <Compile Include="NuGetTemplatesPlus.cs">
+      <DependentUpon>NuGetTemplatesPlus.xsd</DependentUpon>
+    </Compile>
     <Compile Include="PackageInfo.cs" />
     <Compile Include="ProjectInfo.cs" />
     <Compile Include="ProjectItemInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SolutionInfo.cs" />
+    <Compile Include="SourceFileConditionInfo.cs" />
+    <Compile Include="T4CustomTool.cs" />
     <Compile Include="XmlSchemaInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Key.snk" />
+    <None Include="NuGetTemplatesPlus.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGetTemplatesPlus.Library\NuGetTemplatesPlus.Library.csproj">
+      <Project>{40D2022B-EE6C-467E-BC4B-4F35B7171410}</Project>
+      <Name>NuGetTemplatesPlus.Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

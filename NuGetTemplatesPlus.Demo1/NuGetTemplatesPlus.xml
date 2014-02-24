@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<nuGetTemplatesPlus xmlns="urn:NuGetTemplatesPlus.1">
+
+  <sourceFiles>
+
+    <ifFileExtension extension=".democonfig">
+      <includeXmlSchema file="XmlSchemas\democonfig.xsd" />
+      <applyCustomTool type="NuGetTemplatesPlus.Demo1.DemoConfigCodeGenerator, NuGetTemplatesPlus.Demo1" />
+    </ifFileExtension>
+
+    
+  </sourceFiles>
+
+</nuGetTemplatesPlus>

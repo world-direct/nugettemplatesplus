@@ -12,8 +12,9 @@ using System.IO;
 using System.Collections.Generic;
 using EnvDTE;
 using System.Linq;
-using Microsoft.VisualStudio.XmlEditor;
 using Microsoft.VisualStudio.TextManager.Interop;
+using NuGetTemplatesPlus.Engine;
+using NuGetTemplatesPlus.Library.Interface;
 
 namespace GProssliner.NuGetTemplatesPlus_VSPackage {
     /// <summary>
@@ -33,6 +34,7 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage {
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(GuidList.guidNuGetTemplatesPlus_VSPackagePkgString)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
     public sealed class NuGetTemplatesPlus_VSPackagePackage : Package {
         /// <summary>
         /// Default constructor of the package.
@@ -83,59 +85,130 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage {
 
         }
 
-        void _windowEvents_WindowActivated(Window gotFocus, Window lostFocus) {
-            if (gotFocus.ProjectItem == null)
-                return;
+        IVsTextView GetIVsTextViewFromWindow(Window window) {
 
+            var filePath = window.ProjectItem.FileNames[0];
 
-            var projectItem = new EnvDTEProjectItemInfo(gotFocus.ProjectItem);
-            var schemas = projectItem.GetXmlSchemaInfos().ToList();
+            var windowFrame = default(IVsWindowFrame);
+            var unusedUiHierarchy = default(IVsUIHierarchy);
+            var unusedItemID = default(uint);
 
-            if (schemas.Count() == 0)
-                return;
+            if (VsShellUtilities.IsDocumentOpen(this, filePath, Guid.Empty, out unusedUiHierarchy, out unusedItemID, out windowFrame)) {
+                return VsShellUtilities.GetTextView(windowFrame);
+            }
 
-            var textManager = (IVsTextManager)this.GetService(typeof(SVsTextManager));
+            return null;
+        }
 
-            var textView = default(IVsTextView);
-            textManager.GetActiveView(1, null, out textView);
-
-            if (textView == null)
-                return;
+        object GetXmlSchemaContextFromTextView(IVsTextView textView) {
 
             var textLines = default(IVsTextLines);
             textView.GetBuffer(out textLines);
             if (textLines == null)
-                return;
+                return null;
 
             var userData = textLines as IVsUserData;
             if (userData == null)
-                return;
-
-            XmlSchemaContext schemaContext;
-            object obj2;
-            Guid gUID = typeof(XmlSchemaContext).GUID;
-            userData.GetData(ref gUID, out obj2);
+                return null;
 
 
-            if (obj2 is XmlSchemaContext) {
-                schemaContext = (XmlSchemaContext)obj2;
-            } else
-                return;
+            var xmlSchemaContext = default(object);
+            var xmlSchemaContextGuid = new Guid("191c32ae-4c86-4a77-8acf-c0317afb9172");
+            userData.GetData(ref xmlSchemaContextGuid, out xmlSchemaContext);
 
-
-            var project = new EnvDTEProjectInfo(ActiveProject);
-
-            foreach (var schemaInfo in schemas) {
-                var existingRef = schemaContext.Included.Where(s => s.TargetNamespace == schemaInfo.TargetNamespace).SingleOrDefault();
-                if (existingRef != null)
-                    schemaContext.Included.Remove(existingRef);
-
-                schemaContext.Included.Add(new XmlSchemaReference(schemaInfo.TargetNamespace, new Uri(schemaInfo.XsdFilePath)));
-            }
-
-            schemaContext.OnChanged();
+            return xmlSchemaContext;
 
         }
+
+        class XmlSchemaSourceFile : ISourceFile {
+
+            #region ISourceFile Members
+
+            public string FilePath {
+                get;
+                set;
+            }
+
+            public string FileContent {
+                get { return File.ReadAllText(this.FilePath); }
+            }
+
+            #endregion
+        }
+
+        void _windowEvents_WindowActivated(Window gotFocus, Window lostFocus) {
+
+            if (gotFocus.ProjectItem == null || gotFocus.ProjectItem.Name == null || gotFocus.ProjectItem.Name.Length == 0)
+                return;
+
+            object schemaContext = GetXmlSchemaContextFromTextView(GetIVsTextViewFromWindow(gotFocus));
+            if (schemaContext == null)
+                return;
+
+
+
+            var projectItem = new EnvDTEProjectItemInfo(gotFocus.ProjectItem);
+            var schemas = projectItem.GetXmlSchemaInfos(new XmlSchemaSourceFile { FilePath = projectItem.FullName }).ToList();
+
+            if (schemas.Count() == 0)
+                return;
+
+
+            var helper = new SchemaContextHelper(schemaContext);
+            helper.ApplySchemaInfos(schemas);
+
+        }
+
+        class SchemaContextHelper {
+
+            dynamic SchemaContext;
+
+            public SchemaContextHelper(dynamic schemaContext) {
+                this.SchemaContext = schemaContext;
+            }
+
+            public void ApplySchemaInfos(IEnumerable<XmlSchemaInfo> schemaInfos) {
+
+                var dirty = false;
+
+                foreach (var schemaInfo in schemaInfos) {
+                    var existingReference = GetExistingSchemaReference(schemaInfo.TargetNamespace);
+                    if (existingReference != null) {
+                        if (existingReference.Location != schemaInfo.Location) {
+                            this.SchemaContext.Included.Remove(existingReference);
+                            AddXmlSchemaReference(schemaInfo.TargetNamespace, schemaInfo.Location);
+                            dirty = true;
+                        }
+                    } else {
+                        AddXmlSchemaReference(schemaInfo.TargetNamespace, schemaInfo.Location);
+                        dirty = true;
+                    }
+                }
+
+                if (dirty)
+                    this.SchemaContext.OnChanged();
+            }
+
+            private void AddXmlSchemaReference(string targetNamespace, Uri location) {
+                var xmlSchemaReferenceType = ((object)this.SchemaContext).GetType().Assembly.GetType("Microsoft.VisualStudio.XmlEditor.XmlSchemaReference");
+                var ctor = xmlSchemaReferenceType.GetConstructor(new Type[] { typeof(string), typeof(Uri) });
+                var xmlSchemaReference = ctor.Invoke(new object[] { targetNamespace, location });
+
+                // during limitation of calling interface-methods from dynamic we need to do some reflection-stuff here
+                var iCollectionType = typeof(ICollection<>).MakeGenericType(xmlSchemaReferenceType);
+                var addMethod = iCollectionType.GetMethod("Add");
+                addMethod.Invoke(this.SchemaContext.Included, new object[] { xmlSchemaReference });
+            }
+
+            dynamic GetExistingSchemaReference(string targetNamespace) {
+                foreach (var reference in this.SchemaContext.Included) {
+                    if (reference.TargetNamespace == targetNamespace) return reference;
+                }
+
+                return null;
+            }
+        }
+
 
         Project ActiveProject {
             get {
@@ -143,24 +216,25 @@ namespace GProssliner.NuGetTemplatesPlus_VSPackage {
             }
         }
 
+        void DeleteTempoaryTemplates() {
+            foreach (var filePath in Directory.GetFiles(userItemTemplatesLocation, "*_NuGetTemplatesPlus_temp.zip", SearchOption.AllDirectories)) {
+                File.Delete(filePath);
+            }
+        }
 
-        List<string> _filesToDelete;
 
         void _addNewProjectItemEvents_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut) {
-            foreach (var fileToDelete in _filesToDelete) {
-                File.Delete(fileToDelete);
-            }
+            DeleteTempoaryTemplates();
         }
 
         void _addNewProjectItemEvents_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault) {
 
-            _filesToDelete = new List<string>();
+            DeleteTempoaryTemplates();
 
             var project = new EnvDTEProjectInfo(ActiveProject);
             foreach (var templatePath in project.GetItemTemplates("Visual C#")) {
-                var profilePath = Path.Combine(userItemTemplatesLocation, "Visual C#", Path.GetFileName(templatePath));
+                var profilePath = Path.Combine(userItemTemplatesLocation, "Visual C#", Path.GetFileNameWithoutExtension(templatePath) + "_NuGetTemplatesPlus_temp.zip");
                 File.Copy(templatePath, profilePath);
-                _filesToDelete.Add(profilePath);
             }
 
         }
